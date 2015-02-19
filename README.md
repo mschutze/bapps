@@ -1,8 +1,6 @@
 # bapps
 Batch PET Preprocessing in SPM8
 
-Manuel Schütze - Feb 2015
-
 **Description:**
 
 This batch scripts runs SPM8 preprocessing routines on pre-aligned nifti PET images in a folder. The reoutines are normalization, segmentation, creating a grey matter mask using segmented images, smoothing and global signal correction.
@@ -18,3 +16,5 @@ This batch scripts runs SPM8 preprocessing routines on pre-aligned nifti PET ima
 Output folder with different steps of the preprocessing are created automatically according to defined names. Make sure to use check reg in SPM8 to check the results.
 
 You can only run some of the steps/routines, as long as the previous step has been run.
+
+Manuel Schütze - Feb 2015
