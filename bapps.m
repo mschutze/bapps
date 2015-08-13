@@ -1,5 +1,5 @@
 % Batch PET Preprocessing in SPM8 (bapps)
-% Manuel Sch?tze - Feb 2015
+% Manuel Schutze - Aug 2015
 %
 % Description:
 %   This batch scripts runs different SPM8 preprocessing routines on
