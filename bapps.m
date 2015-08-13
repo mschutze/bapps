@@ -1,5 +1,5 @@
 % Batch PET Preprocessing in SPM8 (bapps)
-% Manuel Schütze - Feb 2015
+% Manuel Sch?tze - Feb 2015
 %
 % Description:
 %   This batch scripts runs different SPM8 preprocessing routines on
@@ -30,12 +30,14 @@ function [] = bapps()
     make_gm_mask = true;
     smooth = true;
     correct = true;
+    scale = true;
     % folder names (will be created if don't exist)
     f_aligned = 'c.Nifti_alinhado';
     f_normalized = 'd.Normalized';
     f_segmented = 'e.Segmented'; 
     f_smoothed = 'f.Smoothed';
     f_corrected = 'g.Corrected';
+    f_scaled = 'h.Scaled_4mm_voxel';
     % normalization: template
     template = '/Users/manuel/Documents/MATLAB/spm8/templates/PET_FDG.nii';
     % gm mask: threshold (any voxel with probability higher than
@@ -56,6 +58,9 @@ function [] = bapps()
     corr_alternative = false;
     % correct global signal: prefix
     corr_pref = 'nGB';
+    % reference image for scaling (should be a nifti image with the desired
+    % matrix size and voxel size)
+    ref_scale = '/Users/manuel/Documents/MATLAB/ref_image_vox_4mm.nii';
     % end config
     spm_jobman('initcfg');
     spm('defaults', 'PET');
@@ -321,5 +326,42 @@ function [] = bapps()
         movefile(strcat(corr_pref,'*.nii'),strcat('../',f_corrected));
         cd(root);
     end
-    fprintf('\nFinished bapps');
+    
+    %% Image Scaling
+    if(scale)
+        fprintf('-> Starting image scaling\n\n');
+
+        % check if input folder exists
+        if(exist(f_corrected,'dir') == 0) 
+            error(['The folder ',f_corrected,' does not exist']);
+        end
+
+        % find nifti files
+        cd(f_corrected)
+        files = dir('n*.nii');
+        nf = length(files);
+
+        for i=1:nf
+            % define variables for individual subjects
+            curFile = files(i).name;
+            curSubj = strcat(root,'/',f_corrected,'/',curFile);
+            outputFile = ['v4' curFile];
+            % run matlabbatch job
+            fprintf(['Processing subject ',curFile,' (',int2str(i),' of ',int2str(nf),')']);
+            clear matlabbatch
+            matlabbatch{1}.spm.util.imcalc.input = {ref_scale curSubj};
+            matlabbatch{1}.spm.util.imcalc.output = outputFile;
+            matlabbatch{1}.spm.util.imcalc.outdir = {''};
+            matlabbatch{1}.spm.util.imcalc.expression = 'i2';
+            matlabbatch{1}.spm.util.imcalc.options.dmtx = 0;
+            matlabbatch{1}.spm.util.imcalc.options.mask = 0;
+            matlabbatch{1}.spm.util.imcalc.options.interp = 1;
+            matlabbatch{1}.spm.util.imcalc.options.dtype = 16;
+            spm_jobman('run', matlabbatch);
+        end
+        movefile('v4*.nii',strcat('../',f_scaled));
+        cd(root);
+    end
+    
+    fprintf('\nFinished bapps\n');
 end
